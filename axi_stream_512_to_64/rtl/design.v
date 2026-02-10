@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module width_conv_512_64 #(
+module design #(
     parameter integer C_S00_AXIS_TDATA_WIDTH = 512,
     parameter integer C_M00_AXIS_TDATA_WIDTH = 64,
     parameter integer NUM_OF_BEATS = C_M00_AXIS_TDATA_WIDTH / C_S00_AXIS_TDATA_WIDTH
@@ -187,11 +187,4 @@ module width_conv_512_64 #(
     end
   end
   
-  // initial begin
-  // #135;
-  // $display("%0b at %0t: s_tdata = 0x%0h m_tdata=0x%0h, s_tvalid=%0b, s_tlast=%0b, lastbeatseen = %0b count=%0d",curr_state, $time,S_AXIS_TDATA,M_AXIS_TDATA,S_AXIS_TVALID,S_AXIS_TLAST,last_beat_seen,count);
-  // #10;
-  // $display("%0b at %0t: s_tdata = 0x%0h m_tdata=0x%0h, s_tvalid=%0b, s_tlast=%0b, lastbeatseen = %0b count=%0d",curr_state, $time,S_AXIS_TDATA,M_AXIS_TDATA,S_AXIS_TVALID,S_AXIS_TLAST,last_beat_seen,count);
-  // end
-
 endmodule
