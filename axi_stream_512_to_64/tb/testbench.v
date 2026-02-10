@@ -38,8 +38,7 @@ module testbench();
     input [C_S00_AXIS_TDATA_WIDTH-1:0] data;
     input last;
     begin
-//      #1;
-
+      
       S_AXIS_TDATA  <= data;
       S_AXIS_TVALID <= 1;
       S_AXIS_TLAST  <= last;
@@ -47,8 +46,6 @@ module testbench();
       @(posedge aclk);
       while(!S_AXIS_TREADY)
         @(posedge aclk);
-
-//      #1;
 
       S_AXIS_TVALID <= 0;
       S_AXIS_TLAST  <= 0;
@@ -60,9 +57,7 @@ module testbench();
 
   initial
   begin
-//      M_AXIS_TREADY = 1;
-   $display("**************       This is the Module Log *************************");
-
+    
     aclk = 0;
     aresetn = 1;
     S_AXIS_TDATA  = 0;
@@ -75,31 +70,6 @@ module testbench();
     @(posedge aclk);
     aresetn = 1;
 
-
-    @(posedge aclk);
-//    M_AXIS_TREADY = 1;
-
-//    send_data({
-//                {8{8'd7}},
-//                {8{8'd6}},
-//                {8{8'd5}},
-//                {8{8'd4}},
-//                {8{8'd3}},
-//                {8{8'd2}},
-//                {8{8'd1}},
-//                {8{8'd16}}
-//              }, 0);
-//              @(posedge aclk);
-//    send_data({
-//                {8{8'd15}},
-//                {8{8'd14}},
-//                {8{8'd13}},
-//                {8{8'd12}},
-//                {8{8'd11}},
-//                {8{8'd10}},
-//                {8{8'd9}},
-//                {8{8'd8}}
-//              }, 1'b1);
     @(posedge aclk);
     send_data(512'h3F3E3D3C3B3A393837363534333231302F2E2D2C2B2A292827262524232221201F1E1D1C1B1A191817161514131211100F0E0D0C0B0A09080706050403020100,0);
     
@@ -119,8 +89,5 @@ module testbench();
   M_AXIS_TREADY <= 0;
   #10;
   M_AXIS_TREADY <= 1;
-//  repeat(5) @(posedge aclk);
-////    #55;
-//    M_AXIS_TREADY = 1;
   end
 endmodule
