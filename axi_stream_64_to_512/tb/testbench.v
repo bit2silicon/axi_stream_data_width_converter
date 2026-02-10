@@ -61,14 +61,6 @@ module width_conv_64_512_tb();
   integer i;
   always #5 aclk = ~aclk;
 
-//  initial
-//  begin
-//    #245;
-//    M_AXIS_TREADY <= 0;
-//    #40;
-//    M_AXIS_TREADY <= 1;
-//  end
-
   initial
   begin
     // Initial values
@@ -87,21 +79,6 @@ module width_conv_64_512_tb();
     aresetn <= 1;
     M_AXIS_TREADY <= 1;
 
-    // @(posedge aclk);
-    $display("\n ********   TEST-1: 15 beats ********");
-//    for(i=0; i<20; i=i+1)
-//    begin
-//      // $display("Sending beat %0d...", i);
-//      send_data(64'd0 + i,(i==19));
-//    end
-
-    // for(i=0; i<3; i=i+1)
-    // begin
-    //   if(i==2)
-    //     last=1;
-    //   send_data(64'hA0000000 + i,last);
-    // end
-    
     send_data(64'h0706050403020100,0);
     send_data(64'h0F0E0D0C0B0A0908,0);
     send_data(64'h1716151413121110,0);
