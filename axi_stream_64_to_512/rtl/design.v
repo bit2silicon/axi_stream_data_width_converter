@@ -1,7 +1,7 @@
 
 `timescale 1ns / 1ps
 
-module width_conv_64_512 # (
+module design # (
     parameter integer C_S00_AXIS_TDATA_WIDTH = 64,
     parameter integer C_M00_AXIS_TDATA_WIDTH = 512,
     parameter integer NUM_OF_BEATS = C_M00_AXIS_TDATA_WIDTH / C_S00_AXIS_TDATA_WIDTH
