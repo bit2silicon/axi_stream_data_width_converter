@@ -1,9 +1,10 @@
+// Output DB width must be a multiple of Input DB width
 
 `timescale 1ns / 1ps
 
-module design # (
-    parameter integer C_S00_AXIS_TDATA_WIDTH = 64,
-    parameter integer C_M00_AXIS_TDATA_WIDTH = 512,
+module axis_width_upsizer # (
+    parameter integer C_S00_AXIS_TDATA_WIDTH = 4,
+    parameter integer C_M00_AXIS_TDATA_WIDTH = 16,
     parameter integer NUM_OF_BEATS = C_M00_AXIS_TDATA_WIDTH / C_S00_AXIS_TDATA_WIDTH
   )
   (
@@ -28,14 +29,14 @@ module design # (
              SEND_OUTPUT = 2;
 
   // internal registers
-  reg [63:0]  buffer [0:7];
+  reg [C_S00_AXIS_TDATA_WIDTH-1:0]  buffer [0:NUM_OF_BEATS-1];
   reg [2:0]   count;
   reg         m_tvalid, m_tlast;
   // reg         m_tlast;
   reg [1:0]   curr_state, next_state;
   reg last_beat_seen;
   integer i;
-  reg [511:0] data_to_send_on_M_TDATA;
+  reg [C_M00_AXIS_TDATA_WIDTH-1:0] data_to_send_on_M_TDATA;
   wire AXIS_HANDSHAKE;
 
   assign AXIS_HANDSHAKE = S_AXIS_TVALID && S_AXIS_TREADY;
@@ -69,7 +70,7 @@ module design # (
 
       COLLECT:
       begin
-        if(S_AXIS_TVALID && (count==7 || S_AXIS_TLAST))
+        if(S_AXIS_TVALID && (count==NUM_OF_BEATS-1 || S_AXIS_TLAST))
           next_state = SEND_OUTPUT;
         else
           next_state = COLLECT;
@@ -199,7 +200,10 @@ module design # (
         SEND_OUTPUT:
         begin
           m_tvalid <= 1;
-          data_to_send_on_M_TDATA <= {buffer[7],buffer[6],buffer[5],buffer[4],buffer[3],buffer[2],buffer[1],buffer[0]};
+          for(i=0; i<NUM_OF_BEATS; i=i+1)
+          begin
+            data_to_send_on_M_TDATA[i*C_S00_AXIS_TDATA_WIDTH +: C_S00_AXIS_TDATA_WIDTH] <= buffer[i];
+          end
         end
         default:
         begin

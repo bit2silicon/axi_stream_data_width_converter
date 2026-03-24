@@ -1,9 +1,12 @@
-`timescale 1ns / 1ps
 
-module design #(
-    parameter integer C_S00_AXIS_TDATA_WIDTH = 512,
-    parameter integer C_M00_AXIS_TDATA_WIDTH = 64,
-    parameter integer NUM_OF_BEATS = C_M00_AXIS_TDATA_WIDTH / C_S00_AXIS_TDATA_WIDTH
+// Input's data bus width is more than Output's
+// DB - Data Bus
+// Input DB width should be a multiple of Output DB width
+
+module axis_width_downsizer #(
+    parameter integer C_S00_AXIS_TDATA_WIDTH = 128,
+    parameter integer C_M00_AXIS_TDATA_WIDTH = 32,
+    parameter integer NUM_OF_BEATS = C_S00_AXIS_TDATA_WIDTH / C_M00_AXIS_TDATA_WIDTH
   )
   (
     input wire aclk,
@@ -31,7 +34,7 @@ module design #(
   reg                              curr_state;
   reg                              next_state;
   reg [2:0]                        count;
-  reg [C_M00_AXIS_TDATA_WIDTH-1:0] buffer [0:7];
+  reg [C_M00_AXIS_TDATA_WIDTH-1:0] buffer [0:NUM_OF_BEATS-1];
   wire                             AXIS_HANDSHAKE;
   integer                          i;
 
@@ -65,7 +68,7 @@ module design #(
 
       SEND_OUTPUT:
       begin
-        if(count<7)
+        if(count<NUM_OF_BEATS-1)
           next_state = SEND_OUTPUT;
         else
           next_state = IDLE;
@@ -122,7 +125,7 @@ module design #(
   always@(posedge aclk)
   begin
     if(!aresetn)
-      for(i = 0; i < 8; i = i + 1)
+      for(i = 0; i < NUM_OF_BEATS; i = i + 1)
         buffer[i] <= 0;
     else
     case(curr_state)
@@ -139,7 +142,7 @@ module design #(
           //   buffer[6] <= S_AXIS_TDATA[C_M00_AXIS_TDATA_WIDTH*(6+1)-1: 6*C_M00_AXIS_TDATA_WIDTH];
           //   buffer[7] <= S_AXIS_TDATA[C_M00_AXIS_TDATA_WIDTH*(7+1)-1: 7*C_M00_AXIS_TDATA_WIDTH];
           $display("Hey time = %0t, and AXIS Handshake happened now",$time);
-          for(i=0; i<8; i=i+1)
+          for(i=0; i<NUM_OF_BEATS; i=i+1)
             buffer[i] <= S_AXIS_TDATA[C_M00_AXIS_TDATA_WIDTH*i+:C_M00_AXIS_TDATA_WIDTH];
           // This means width*(i+1):i*width] - supported in Verilog 2001
         end
@@ -163,12 +166,12 @@ module design #(
       case(curr_state)
         IDLE:
         begin
-        $display("IDLE at %0t: s_tdata = 0x%0h m_tdata=0x%0h, s_tvalid=%0b, s_tlast=%0b, lastbeatseen = %0b count=%0d",$time,S_AXIS_TDATA,M_AXIS_TDATA,S_AXIS_TVALID,S_AXIS_TLAST,last_beat_seen,count);
-          if(count==7)
+          $display("IDLE at %0t: s_tdata = 0x%0h m_tdata=0x%0h, s_tvalid=%0b, s_tlast=%0b, lastbeatseen = %0b count=%0d",$time,S_AXIS_TDATA,M_AXIS_TDATA,S_AXIS_TVALID,S_AXIS_TLAST,last_beat_seen,count);
+          if(count==NUM_OF_BEATS-1)
             m_tlast <= 0;
           if(S_AXIS_TVALID)
           begin
-          $display("At %0t hey tvalid is high and curr state is IDLE",$time);
+            $display("At %0t hey tvalid is high and curr state is IDLE",$time);
             last_beat_seen <= S_AXIS_TLAST;
           end
         end
@@ -178,13 +181,22 @@ module design #(
           if(m_tlast==0)
             m_tlast <= last_beat_seen;
           if(M_AXIS_TREADY && last_beat_seen)  // Do not need to check M_AXIS_TVALID as we are already driving it to 1 in this state
-            begin
+          begin
             last_beat_seen <= 1'b0;
             $display("At %0t hey lastbeat seen and maxistready is high and curr state is SEND_OUTPUT", $time);
-            end
+          end
         end
       endcase
     end
   end
-  
+
+  initial
+  begin
+    #135;
+    $display("%0b at %0t: s_tdata = 0x%0h m_tdata=0x%0h, s_tvalid=%0b, s_tlast=%0b, lastbeatseen = %0b count=%0d",curr_state, $time,S_AXIS_TDATA,M_AXIS_TDATA,S_AXIS_TVALID,S_AXIS_TLAST,last_beat_seen,count);
+    #10;
+    $display("%0b at %0t: s_tdata = 0x%0h m_tdata=0x%0h, s_tvalid=%0b, s_tlast=%0b, lastbeatseen = %0b count=%0d",curr_state, $time,S_AXIS_TDATA,M_AXIS_TDATA,S_AXIS_TVALID,S_AXIS_TLAST,last_beat_seen,count);
+  end
+
 endmodule
+
